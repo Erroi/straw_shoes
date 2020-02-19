@@ -1,7 +1,7 @@
 ##### how the $digest loop works、how to use the $apply() method
 
 $digest loop:
-一般digest周期都是自动触发的，我们也可以使用$apply进行手动触发
+> 一般digest周期都是自动触发的，也可以使用$apply进行手动触发
 * $watch list
 
     {{name}} ang need to track the change, by adding a watch function to the $watch list.
@@ -21,7 +21,7 @@ $digest loop:
             $scope.$watch('newUser.email', 
                 function(newVal, oldVal) {
                 if (newVal === oldVal) return; // on init
-            });
+            }, true); // 第三个参数 true，表示检测的newUser.email是个对象，比较的是对象的值而不是引用
             // ... 
             // *如何停掉一个$watch?----调用 unregisterWatch，因为$scope.$watch会返回一个停止注册的函数*
             // later, we can unregister this watcher 
@@ -29,7 +29,10 @@ $digest loop:
             unregisterWatch();
             ```
 
-
+* $apply()
+    $scope的函数，表示强制执行一次 $digest loop,除非正在循环 抛出异常，表示不需要在此使用apply
+    当调用$digest的时候，只触发当前作用域和其子作用域上的监控
+    当调用$apply的时候，会触发作用域树上的所有监控
 
 
 * 有哪些措施可以改善Angular 性能
@@ -70,3 +73,15 @@ $digest loop:
 
 * ui.router: 基于 state （状态）的
     > 使用 ui.router 能够定义有明确父子关系的路由，并通过 ui-view 指令将子路由模版插入到父路由模板的 <div ui-view></div> 中去，从而实现视图嵌套
+
+> 单向数据绑定 $scope -> view : {{}} 或 <span ng-bind="val"></span>
+> 双向数据绑定 $scope -> view -> $scopw : <input type='text' ng-model='val'/>
+
+
+* controller 之间的通信
+    1. 作用域继承（如dialog）
+    2. 注入服务。将需要的数据注册为一个service或factor，需要的时候inject
+    3. 事件机制。ang提供了冒泡和隧道机制
+        `$scope.$emit('someEvent', {})` 从作用域往上发送事件
+        `$rootScope.$broadcast('someEvent',{})` 从作用域往下
+        `$rootScope.$on('someEvent',function(event, data){})` 监听
