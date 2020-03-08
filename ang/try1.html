@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.staticfile.org/angular.js/1.4.6/angular.min.js"></script>
+  <title>Document</title>
+</head>
+<body>
+  <div ng-app="myApp" ng-controller="testCtrl">
+    name: <input test-node-dir type="text" ng-model="name">
+    <h1>hello:{{name}}</h1>
+  </div>
+</body>
+<script type="text/javascript">
+  var app = angular.module('myApp', []).controller('testCtrl', function($scope){});
+  app.directive('testNodeDir', function() {
+    return {
+      restrict: "A",
+      require: 'ngModel',
+      link: function(scope, ele, attr, ngModelCtrl) {
+        // $formatters: 监控model值得变化，负责model-->view
+        ngModelCtrl.$formatters.push(function(modelVal) {
+          console.log('--formatters-')
+          if (typeof modelVal != 'undefined') {
+            return '此时已无声'
+          }
+        })
+        console.log('ngModel:', ngModelCtrl)
+
+        // $parsers: 对界面输入后的值进行干预
+        ngModelCtrl.$parsers.push(function(viewValue) {
+          console.log('---parsers--')
+          if (typeof viewValue != 'undefined') {
+            ngModelCtrl.$render()
+            return '此处无声胜有声'  // 监听的是 $viewValue 返回的是 $modelValue
+          }
+        })
+
+        // 有时，$formatters数组里也许会有不止一个方法，为保证一个最终的显示效果，应该用一次**$render**方法
+        // $render 总是在$formatters完成之后调用
+        var h1 = document.getElementsByTagName('h1')[0];
+        ngModelCtrl.$render = function() {
+          console.log('---render')
+          if (typeof scope.name != 'undefined'){
+            h1.style.color = 'red';
+          }
+        }
+
+        ngModelCtrl.$setViewValue('hello set view value')
+
+        // $formatters、$render 初始化时执行一次，$parsers 每次 $viewValue 变更的时候都会执行
+      }
+    }
+  })
+</script>
+</html>
