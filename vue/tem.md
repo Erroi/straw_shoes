@@ -110,3 +110,40 @@ data[getter,setter]  ----collect as dependency--->  Watcher  ---re-render-->   C
 
 既然是异步的，那怎么确保取到变化后的值呢？
 `vm.$nextTick(function(){this.$el.textContext})`
+
+
+
+
+***_Object.defineProperty(obj, prop, descriptor)_***
+> 此方法会直接在一个对象上定义一个新属性，或者修改一个对象的现有属性，并返回这个对象。
+
+> 此方法允许精确添加或修改对象的属性，能够枚举出的（for...in 或 Object.keys）这些属性是可以被改变和删除的。
+
+> 默认，使用Object.defineProperty()添加的属性值是不可修改的。
+
+_descriptor_
+
+* get
+	
+	> 一个给属性提供 getter 的方法，当访问该属性时，该方法会被执行，会传 this 对象 （由于继承关系，这里的this不一定是定义改属性的对象）。
+	
+*  set
+	
+	> 一个给属性提供 setter 的方法，当属性值修改时，触发执行该方法。接受唯一参数，即该属性新的参数值。
+	
+	```
+	// 存取描述符与数据描述符（value\writable\enumerable\configurable）不能混用
+	Object.defineProperty(o, "a", {
+		get: function(){
+			return bValue;
+		},
+		set: function(newValue){
+			bValue = newValue
+		},
+		enumerable: true,
+		configurable: true
+	})
+  ```
+
+***_diff_***
+> https://juejin.im/post/5affd01551882542c83301da#heading-1
