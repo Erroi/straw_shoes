@@ -42,3 +42,30 @@ _动态类型语言_
 > amd  define(['xxx','yyy'],function(x,y){})
 > umd  (function(x){})(function(req,exp){})
 
+
+
+* TypeScript
+  类型检查、语言转换、语法错误
+  1. 编译能力（语言转换）: ts|js -> es3/4/5/6...
+  2. 类型检查：有
+  3. 无（插件）
+  4. 代码检查工具：eslint + typescript-eslint
+  5. 单元测试工具：ts-jest
+  如：ts-loader
+
+* babel
+  1. 编译能力（语言转换）: ts|js -> es3/4/5/6...
+  2. 无（类型检查）
+  3. 插件丰富
+  4. 代码检查工具：babel-eslint
+  5. 单元测试工具：babel-jest
+  如：@babel/cli  @babel/core  @babel/preset-env  @babel/preset-typescript：做语言转换（配合tsc做类型检查）
+    @babel/plugin-proposal-class-properties   @babel/plugin-proposal-object-rest-spread
+    
+  **ts-loader 和 @babel/preset-typescript 不要混用**
+
+* ESLint
+  代码风格、语法错误
+
+
+  webpack 的 optimization:{splitChunk: {chunks: 'all'}} 自动将业务代码和引用包代码分开，便于浏览器缓存
