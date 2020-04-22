@@ -80,5 +80,118 @@ for i in zodiac:
 z_num1 = {i:0 for i in zodiac}
 
 
+# 函数参数的一些写法
+def func(a, b, c):
+  print('a= %s' %a)
 
+func(1, c=3)
+
+# *other 表示其他非必须的参数，first为必传参数
+def howlong(first, *other):
+  print(1 + len(other))
+
+howlong(123, 3,4)
+
+var1 = 123
+var2 = 34
+def func():
+  global var2 # 引用了全局变量 并改变全局变量
+  var2 = 4 
+  var1 = 456 # 局部变量
+  print(var1)
+
+func()
+
+
+# 迭代器 # next() 取下一个值，也可以用for in 直接遍历下个值
+list1 = [1,2,3,4]
+it = iter(list1)
+print( next(it) )
+
+for i in range(10, 20, 0.5):
+  print(i)
+
+# yeild
+def frange(start, stop, step):
+  x = start
+  while x < stop:
+    yield x
+    x += step
+
+for i in frange(10, 20, 0.5):
+  print(i)
+
+# lambda
+# def add(x,y): return x+y
+lambda x,y: x+y
+
+# 内置函数
+list(filter(lambda x: x>2 ,list1))
+list(map(lambda x:x+1 , list1))
+list(map(lambda x,y: x+y, list1,list1))
+from functools import reduce
+reduce(lambda x,y: x+y, [2,2,3,4], 1)
+# zip() 矩阵转换
+for i in zip((1,2,3),(4,5,6)):
+  print(i)  # (1,4) (2,5) (3,6)
+dicta = {a: 'aa', b: 'bb'}
+dictb = zip(dicta.values(), dicta.keys())
+dict(print(dictb))  # {aa: 'a', bb: 'a'}
+
+import time
+# 装饰器
+# 定义一个装饰器
+def timmer(func):
+  def wrapper():
+    start_time = time.time()
+    func()
+    stop_time = time.time()
+    print('runtime:%s s %s'%(stop_time - start_time), func.__name__)
+  return wrapper
+
+# 使用装饰器 相当于timmer(sleepfunc())
+@timmer
+def sleepfunc():
+  time.sleep(3)
+
+
+
+# 面向**对象**编程： 把一类的东西归类成一个对象 更符合人的思维
+class Player():                   # 定义一个类
+  def __init__(self, name, hp):
+    self.name = name
+    self.__hp = hp    # __为私有属性，只能通过自身方法修改
+  def print_role(self):           # 定义一个类的方法
+    print('%s: %s'%(self.name, self.hp))
+  def updateHp(self, hp):
+    self.__hp = hp
+  
+user1 = Player('tom', 100) # 类的实例化
+user2 = Player('jerry', 90)
+user1.print_role()
+user2.print_role()
+user2.name = 'aaaa'  # aaaa
+user2.__hp = 2      # 90
+
+# class 继承
+class Monster():
+  def __init__(self, hp=100):
+    self.hp = hp
+  def run(self):
+    print('移动到摸个位置')
+
+class Animals(Monster):
+  def __init__(self, hp=10):
+    super().__init__(hp)  # 触发父集的 self.hp = hp
+  
+a1 = Monster(200)
+print(a1.hp)
+print(a1.run())
+a2 = Animals(1)
+print(a2.hp)
+print(a2.run())
+type(a1) # <class '__main__.Monster'>
+type(a2)  # <class '__main__.Animals'>
+isinstance('123', object)  # True
+isinstance(123, object)    # True
 

@@ -24,7 +24,7 @@ file6 = open('name.txt')
 print(file6.tell()) # 读取指针所在当前位置 0
 file6.read(1)
 print(file6.tell()) # 1
-file6.seek(0)
+file6.seek(0) # 返回到指针0位置
 print(file6.tell())
 
 
