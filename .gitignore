@@ -1,2 +1,5 @@
-k8s/
+k8s/__pycache__/
+k8s/app.py
+k8s/Dockerfile
+k8s/requirements.txt
 node/t/

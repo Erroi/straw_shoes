@@ -50,7 +50,7 @@
   1. net-tools
     # ifconfig
     # route -n 查看网关
-    # root
+    root
     # netstat
   2. iproute2
     # ip
@@ -100,7 +100,7 @@
    # yum search [package]
 
    rpm 格式内核
-   uname -f 查看内核版本
+   uname -a 查看内核版本
    yum install kernel-3.10.0 升级内核版本
    yum update 升级其他软件包和补丁
    cat /etc/centos-release  查看centos版本

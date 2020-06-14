@@ -218,6 +218,10 @@ class Husky extends Dog {
   color: string
 }
 
+// super 代表的是*父类*这个构造原型，super.food
+// super(name) 代表的是 父类原型Dog.constructor(name) 也就是实例化了这个父类（new Dog(name)）「设定为b」，
+//        而(new Husky() 也就是super(name))「设定为c」继承了父类this(b)上的属性，同时this（实例）自定义自己(c)的属性
+
 // 类的修饰符，默认都是public
 // 私有成员 只能被类的本身调用，不能被实例、子类调用
 //      dog.pri()   private私有成员不能被实例调用
