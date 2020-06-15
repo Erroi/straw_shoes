@@ -354,6 +354,106 @@ $ curl [service.name]:[port]
     6. pid
   
 
+##### Kubernetes 调度过程
+> 把Pod 放到合适的 Node上
+* 资源调度 - 满足 Pod 资源要求
+  Resources：CPU/Memory/Storage/GPU/FGPA
+      spec.container.resources.[requests|limits].[cpu|memory]
+  Qos：Guaranteed/Burstable/BestEffort：为不同业务特点配置不同Qos
+      Quality of Service: .status.qosClass: 
+        1. Guaranteed(CPU/Memory request必须等于limit) -敏感型、需要保障业务
+        2. Burstable(request和limit不相等) -次敏感型、需要弹性业务
+        3. BestEffort(所有资源request/limit必须都不相等)  -可容忍型业务
+  Resource Quota：满足资源要求，限制每个Namespace资源用量，防止过度使用
+      ```
+      apiVersion: v1
+      kind: ResourceQuota
+      metadata:
+        name: demo-quota
+        namespace: demo-ns
+      spec:
+        hard:
+          cpu: '1000'
+          memory: 200Gi
+          pods: 10
+        scopeSelector:
+          matchExpressions:
+          - operator: Exists
+            scopeName: NotBestEffort
+      限制demo-ns Namespace下非BestEffort Qos的Quota：cpu只能1000个...
+      ```
+      
+
+* 关系调度 - 满足Pod/Node的特殊关系/条件要求
+  PodAffinity/PodAntiAffinity: Pod和Pod间关系
+    1. 必须和某些Pod调度到一起
+        spec.affinity.podAffinity.requiredDuringSchedulingIgnoreDuringExecution
+        ```
+        spec:
+          affinity:
+            podAffinity[podAntiAffinity]: # 亲和调度、反亲和调度
+              requiredDuringSchedulingIgnoredDuringExecution  [preferredDuringSchedulingIgnoredDuringExecution]:  # 必须和某些pod调度到一起、优先
+              - labelSelector:
+                matchExpressions:
+                - key: k1
+                  operator: [In|NotIn|Exists|DoesNotExist]
+                  values:
+                  - v1
+        ```
+  NodeSelector/NodeAffinity: 由Pod决定适合自己的Node
+    1. NodeSelector
+      ```
+      spec:
+        containers:
+        nodeSelector: # 强制调度到 k1=v1的node上
+          k1: v1
+      ```
+    2. NodeAffinity
+      ```
+      spec:
+        affinity:...（同pod）
+      ```
+  Taint/Tolerations：限制调度到某些Node
+    1. Taint
+      ```
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: demo-node
+      spec:
+        taints:
+        - key: 'k1'
+          value: 'v1'
+          effect: [noSchedule|preferNoSchedulr|NoExecure]
+          # noSchedule 禁止新Pods调度上来
+          # preferNoSchedule 尽量不调度到这台
+          # NoExecute 会evict没有对应toleration的pods，且不会调度新的上来
+      ```
+      ```
+      kind: Pod
+      spec:
+        containers:
+        tolerations:
+        - key: 'k1'
+          operator: 'Equal' # Exists 表示key相同即可，不管value
+          value: 'v1'
+          effect: 'NoSchedule' # 取值与node的一样，可以为空 匹配所有
+      ```
+  * PriorityClass 资源不足时，优先级调度配置
+    ```
+    apiVersion: apis/v1
+    kind: PriorityClass
+    metadata:
+      name: high
+    value: 10000
+    globalDefault: false
+    ```
+    ```
+    # 为 Pod 配置不同优先级的 priorityClassName
+    kind: Pod
+    spec:
+      priorityClassName: high
+    ```
 
 
 
