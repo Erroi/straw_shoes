@@ -96,6 +96,7 @@
 `kubectl get pods --show-labels [-l 'env in (test, dev)']`
 `kubectl get pods --show-labels [-l 'env notin (test, dev)']`
 `kubectl label pods nginx1 env=test1 --overwrite`
+`kubectl label pods nginx1 tie-` # 去除key为tie的label
 `kubectl annotate pods nginx1 my-annotate='my comment, ok'`
 * annotations
   * 存储资源的非标示性信息
@@ -120,12 +121,12 @@
 
 
 ##### 应用编排与管理： Deployment
-> 管理部署发布的控制器
+> 管理部署发布的控制器: 水平扩展/收缩 horizontal scaling out/in
 * 定义一组Pod的期望数量，controller会维持Pod数量与期望数量一致
 * 配置Pod发布方式，controller会按照给定策略更新Pod，保证更新过程中不可用的pod数量在限定范围内
 * 支持一键回滚
 * 更新镜像
-  `kubectl set image deployment.v1.apps/nginx-deployment nginx=nginx:1.9.1`
+  `kubectl set image deployment nginx-deployment nginx=nginx:1.9.1`
   `kubectl get deployment nginx-deployment -o yaml | less`
   回滚：`kubectl rollout undo deployment/nginx-deployment`
        `kubectl rollout undo deployment.v1.apps/nginx-deployment --to-revision=2`
@@ -133,8 +134,10 @@
 
 * 管理模式
   * Deployment只负责管理不同版本的ReplicaSet，由ReplicaSet管理Pod副本数
+    每次修改Deployment，都会创建一个版本的replicaSet，记录下来以便回滚
   * 每个ReplicaSet对应里Deployment template的一个版本
   * 一个 ReplicaSet下的Pod都是相同的版本
+  **ReplicaSet 对应的是每次deployment变更的每个历史版本**  spec.revisionHistoryLimit
 
 
 ##### Job：管理任务的控制器
@@ -304,12 +307,12 @@ Kubernetes Volume 类型：
   `Telepresence --swap-deployment $DEPLOYMENT_NAME`
 * 当本地开发的应用需要调用集群中的服务时：
   使用 Port-Forward 将远程应用代理到本地端口上，便可以访问curl localhost:8080
-  `kubectl port-forward  [svc/app:pod.name] -n [namespace] 8080:80`
+  `kubectl port-forward  [pod.name] -n [namespace] 8080:80`
 
 
 ##### k8s 服务发现
 * **集群内访问 Service**
-$ kubectl get svc
+$ kubectl get [svc|service]
 $ curl [CLUSTER-IP]:[PORT]
 $ curl [service.name]:[port]
 * Headless Service
@@ -327,7 +330,7 @@ $ curl [service.name]:[port]
 
   $ kubectl get pod -o wide [查看ip] -l run=nginx [筛选label]
   $ kubectl exec -it [podName] sh  # 进入某个Pod内部
-  $ curl [svc.ip] 或 wget [svc.ip] | [env.KUBERNETES_SERVICE_HOST] # 通过svcIp来访问其他Pod
+  $ curl [svc.cluster-ip] 或 wget [svc.cluster-ip] | [env.KUBERNETES_SERVICE_HOST] # 通过svcIp来访问其他Pod
   
   ** 外部访问 直接浏览器访问 svc.type为LoadBalancer的External-IP
 
@@ -456,6 +459,12 @@ $ curl [service.name]:[port]
     ```
 
 
+##### StatefulSet: 主要面向有状态应用管理的控制器
+> StatefulSet 能较好的满足一些有状态应用特有的需求：
+1. 每个Pod有Order序号，会按照序号创建、删除、更新Pod
+2. 通过配置headless service，使每个Pod有一个唯一的网络标识 hostname
+3. 通过配置pvc template，每个Pod有一块独享的pv存储盘
+4. 支持一定数量的灰度发布
 
 
 
