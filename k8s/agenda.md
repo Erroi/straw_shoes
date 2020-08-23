@@ -227,6 +227,7 @@ data:
 ```
 
 * ServiceAccount
+> ServiceAccount 是k8s中唯一能够通过API方式管理APIServer访问凭证
 > 主要用于解决 Pod 在集群中的身份认证问题。认证使用的授权信息，则利用前面讲到的Secret（type=kubernetes.io/service-account-token）进行管理
 ```
 apiVersion: v1
@@ -307,7 +308,7 @@ Kubernetes Volume 类型：
   `Telepresence --swap-deployment $DEPLOYMENT_NAME`
 * 当本地开发的应用需要调用集群中的服务时：
   使用 Port-Forward 将远程应用代理到本地端口上，便可以访问curl localhost:8080
-  `kubectl port-forward  [pod.name] -n [namespace] 8080:80`
+  `kubectl port-forward  [svc/pod.name] -n [namespace] 8080:80`
 
 
 ##### k8s 服务发现
@@ -327,6 +328,11 @@ $ curl [service.name]:[port]
   3. NodePort
   4. LoadBalance
   ** 集群外访问 --> LoadBalancer（SLB）49.231.23.89:80 [所有Node级别]--> NodePort 宿主机的IP:32080 [宿主机Node级别] --> ClusterIP 172.29.3.27:80 [ServicePod级别] --> port为ServicePod的targetPort的所有pod xx.xx.xx.x:9376,xx...x.:9376[Pod级别]
+
+  > 1. 通过Service的ClusterIP负载Pod
+  > 2. 通过 Ingress-Nginx 监听 Ingress配置，动态生成 nginx，并将nginx暴露到 23456的 NodePod；
+  > 3. 通过云厂商SLB 监听所有节点的 23456端口；
+  > 3->2->1
 
   $ kubectl get pod -o wide [查看ip] -l run=nginx [筛选label]
   $ kubectl exec -it [podName] sh  # 进入某个Pod内部
@@ -467,5 +473,28 @@ $ curl [service.name]:[port]
 4. 支持一定数量的灰度发布
 
 
+##### 应用故障排查 
+* readiness Probe 就绪指针
+* liveness Probe 保活指针
+1. Pod 停留在 Pending
+> Pending表示调度器没有介入，可以通过 **Kubectl describe pod**,查看事件排查，通常和资源使用相关。
+2. Pod 停留在 waiting
+> 一般表示Pod的镜像没有正常的拉取，私有镜像拉取，镜像地址不存在，镜像公网拉取相关。
+3. Pod 不断被拉起且可以看到 crashing
+> 表示Pod已经完成调度并启动，但是启动失败，通常是由于配置、权限造成，需要查看日志**kubectl logs pod**
+4. Pod 处在Running状态，但是没有正常工作
+> 通常是由于部分字段拼写错误造成的，可以通过校验部署来排查，**kubectl apply --validate -f pod.yaml**
+5. Service 无法正常工作
+> 在排除网络插件自身的问题外，最可能是label配置有问题，可以通过查看endpoint方式排查**kubectl get endpoints**
 
 
+
+##### 日志的场景
+1. 主机内核的日志
+> 主机内核日志可以协助开发者诊断：网络栈异常，驱动异常、文件系统异常、影响节点内核稳定的异常
+2. Runtime的日志
+> 最常见的运行时是 Docker，可以通过Docker的日志排查例如删除Pod Hang等问题
+3. 核心组件日志
+APIServer 日志可以用来审计， Scheduler日志可以诊断调度，etcd日志可以查看存储状态，Ingress日志可以分析接入层流量。
+4. 部署应用的日志：
+可以通过应用日志分析查看业务层的状态，诊断异常 如500

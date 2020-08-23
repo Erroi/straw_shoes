@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+
+/**
+   dataset = {
+     current: [15, 11, 17, 25, 37],
+     total: [25, 26, 40, 45, 68],
+   }
+ */
+.bargraph {
+  display: grid;
+  width: 150px;
+  height: 100px;
+  padding: 10px;
+  transform: scaleY(3);
+  grid-template-columns: repeat(5, 20%);
+}
+.bargraph div {
+  margin: 0 2px;
+}
+.bargraph div:nth-child(1) {
+ background: linear-gradient(to bottom, transparent 75%, #37c 0, #37c 85%, #3c7 0);
+}
+.bargraph div:nth-child(2) {
+ background: linear-gradient(to bottom, transparent 74%, #37c 0, #37c 89%, #3c7 0);
+}
+.bargraph div:nth-child(3) {
+ background: linear-gradient(to bottom, transparent 60%, #37c 0, #37c 83%, #3c7 0);
+}
+.bargraph div:nth-child(4) {
+ background: linear-gradient(to bottom, transparent 55%, #37c 0, #37c 75%, #3c7 0);
+}
+.bargraph div:nth-child(5) {
+ background: linear-gradient(to bottom, transparent 32%, #37c 0, #37c 63%, #3c7 0);
+}
+  </style>
+</head>
+<body>
+  <div class="bargraph">
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+
+
+ <!--
+      dataset = {
+        total: [25, 26, 40, 45, 68],
+        current: [15, 11, 17, 25, 37],
+      }
+  -->
+  <svg width="120px" height="240px" viewBox="0 0 60 100">
+    <g transform="translate(0, 100) scale(1, -1)">
+      <g>
+        <rect x="1" y="0" width="10" height="25" fill="#37c"/>
+        <rect x="13" y="0" width="10" height="26" fill="#37c"/>
+        <rect x="25" y="0" width="10" height="40" fill="#37c"/>
+        <rect x="37" y="0" width="10" height="45" fill="#37c"/>
+        <rect x="49" y="0" width="10" height="68" fill="#37c"/>
+      </g>
+      <g>
+        <rect x="1" y="0" width="10" height="15" fill="#3c7"/>
+        <rect x="13" y="0" width="10" height="11" fill="#3c7"/>
+        <rect x="25" y="0" width="10" height="17" fill="#3c7"/>
+        <rect x="37" y="0" width="10" height="25" fill="#3c7"/>
+        <rect x="49" y="0" width="10" height="37" fill="#3c7"/>
+      </g>
+    </g>
+  </svg>
+  <canvas width="300" height="300"></canvas>
+<script>
+  // webGL
+  const canvas = document.querySelector('canvas');
+  const gl = canvas.getContext('webgl');
+
+  const vertex = `
+    attribute vec2 position;
+    varying vec3 color;
+
+    void main() {
+      gl_PointSize = 1.0;
+      color = vec3(0.5 + position * 0.5, 0.0);
+      gl_Position = vec4(position * 0.5, 1.0, 1.0);
+    }
+  `;
+  const fragment = `
+    precision mediump float;
+    varying vec3 colot;
+
+    void main() {
+      gl_FragColor = vec4(color, 1.0);
+    }
+  `;
+
+  const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+  gl.shaderSource(vertexShader, vertex);
+
+  const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+  gl.shaderSource(fragmentShader, fragment);
+  gl.compileShader(fragmentShader);
+  
+  const program = gl.createProgram();
+  gl.attachShader(program, vertexShader);
+  gl.attachShader(program, fragmentShader);
+  gl.linkProgram(program);
+  gl.useProgram(program);
+
+  const points = new Float32Array([
+    -1, -1,
+    0, 1,
+    1, -1,
+  ]);
+
+  const bufferId = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
+  gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
+
+  const vPosition = gl.getAttribLocation(program, 'position');
+  gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0,0);
+  gl.enableVertexAttribArray(vPosition);
+
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.drawArrays(gl.TRIANGLES, 0, points.length / 2);
+</script>
+</body>
+</html>

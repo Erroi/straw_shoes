@@ -104,7 +104,7 @@ Headless Service 指clusterIP: None
 > 这个 Job 对象在创建后，它的 Pod 模板，被自动加上了一个 controller-uid=< 一个随机字符串 > 这样的 Label。而这个 Job 对象本身，则被自动加上了这个 Label 对应的 Selector，从而 保证了 Job 与它所管理的 Pod 之间的匹配关系
 > restartPolicy=Never 的原因：离线计算的 Pod 永远都不应该被重启，否则它们会再重新计算一遍
 > restartPolicy 在 Job 对象里只允许被设置为 Never 和 OnFailure；而在 Deployment 对象里，restartPolicy 则只允许被设置为 Always
-`kubectl log [pod:pi-68dd7]`
+`kubectl logs [pod:pi-68dd7]`
 > 定义的 restartPolicy=OnFailure，那么离线作业失败后，Job Controller 就不会去尝试创建新的 Pod。但是，它会不断地尝试重启 Pod 里的容器
 > 我们就在 Job 对象的 spec.backoffLimit 字段里定义了重试次数为 4
 > spec.activeDeadlineSeconds 字段可以设置最长运行时间
@@ -212,3 +212,6 @@ spec:
           servicePort: 80
 ```
 
+使用 kubectl attach 命令，连接到 shell 容器的 tty 上，查看进程
+`kubectl attach -it nginx -c shell`
+`ps ax`

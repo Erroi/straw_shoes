@@ -3,3 +3,4 @@ k8s/app.py
 k8s/Dockerfile
 k8s/requirements.txt
 node/t/
+py/__pycache__
