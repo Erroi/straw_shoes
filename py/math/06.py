@@ -71,16 +71,47 @@ def permutate(horses, result):
     permutate(rest_horses, new_result)
 
 
-##
-# 排列：每次传入嵌套函数的剩余元素，不再是所有未选择元素，而是出现在当前被选元素之后的那些。
-# teams-目前还剩多少队伍没有参与组合，result-保存当前已经组合的队伍
-# m 要挑选的个数
-# ##  
-def combine(teams, result, m):
-  if len(result) == m:
-    return result
-  for i in teams:
-    newResult = result.copy()
-    newResult.append(teams[i])
-    rest_teams = teams[i:]
-    combine(rest_teams, newResult, m)
+
+
+
+## copy
+# 切分
+def split_list(temp_list):
+  if not isinstance(temp_list, list):
+    raise TypeError
+  else:
+    if not temp_list:
+      raise ValueError
+    else:
+      length = len(temp_list)
+      if length == 1:
+        return temp_list
+      import math
+      mid = math.cell(length / 2)
+      del math
+      left_list = split_list(temp_list[:mid])
+      right_list = split_list(temp_list[mid:])
+      return merger_list(left_list, right_list)
+
+# 归并
+def merger_list(left, right):
+  result = []
+  while True:
+    if left and right:
+      left_0 = left[0]
+      right_0 = right[0]
+      if left_0 > right_0:
+        min_num = right.pop(0)
+      else:
+        min_num = left.pop(0)
+      result.append(min_num)
+    elif left:
+      result.append(left.pop(0))
+    elif right:
+      result.append(right.pop(0))
+    else:
+      break
+  return result
+
+print(split_list([3, 1, 2, 7, 4, 6, 9, 9, 10, 13, 12, 5]))
+
