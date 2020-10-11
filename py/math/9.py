@@ -25,6 +25,8 @@ def least_bills_recursion(total):
 def least_bills_iteration(total):
   current = 0
   dp = [0] * (total + 1)
+  dp[0] = 0
+  dp[1] = 0
   dp[2] = 1
   dp[3] = 1
   dp[7] = 1
