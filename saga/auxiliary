@@ -1,0 +1,67 @@
+// ### Saga 辅助函数
+
+/**
+ * 1. takeEvery
+ * 提供了类似redux-thunk。监听每次 FETCH_REQUESTED action被发起时启动上面的任务
+ */
+import { call, put, takeEvery, takeLatest } from 'redux-saga/effects'
+
+export function* fetchData(action) {
+  try {
+    const data = yield call(Api.fetchUser, action.payload.url);
+    yield put({type: "FETCH_SUCCEEDED", data});
+  } catch(error) {
+    yield put({type: "FETCH_FAILED", error});
+  }
+}
+
+function* watchFetchData() {
+  yield* takeEvery('FETCH_REQUESTED', fetchData)
+}
+
+function* watchFetchData01() {
+  yield* takeLatest('FETCH_REQUESTED', fetchData)
+}
+
+/**
+ * takeEvery 允许多个 fetchData 实例同时启动。尽管之前还有一个或多个 fetchData 尚未结束，还是可以启动一个新的fetchData任务。
+ * takeLatest 只允许最新的一个 fetchData 任务在执行。此任务是最后被启动的那个
+ */
+
+export default function* rootSaga() {
+  yield takeEvery('FETCH_USERS', fetchData)
+  yield takeEvery('CREATE_USER', fetchData)
+}
+
+
+/**
+ * call 的由来
+ */
+function* fetchProducts() {
+  const products = yield Api.fetch('/products') // 直接调用了Api.fetch，会立即执行
+  console.log(products)
+}
+// 但是不好测试
+const iterator = fetchProducts()
+assert.deepEqual(iterator.next().value, ??)
+// 而只需要保证 fetchProducts 任务 yield 一个调用正确的函数，并且函数有着正确的参数。
+// yield 一条描述函数调用的信息: Generator 将会 yield包含指令的文本对象（Plain Object）
+{
+  CALL: {
+    fn: Api.fetch;
+    args: ['./products'];
+  }
+}
+// 所以redux-saga 提供了一个不一样的方式来执行异步调用
+yield call(Api.fetch, '/products')
+// 不立即执行异步调用，相反，call 创建了一条描述结果的信息。纯文本描述对象。middleware确保执行函数调用并在响应被resolve时恢复generator。
+// 这样可以很容易测试 Generator，就算它在Redux环境之外。因为 call 只是一个返回纯文本对象的函数而已。
+assert.deepEqual(
+  iterator.next().value,
+  call(Api.fetch, '/products'),
+  'fetch products should yield an effect'
+)
+
+// call 、 apply 的几种调用对象方法
+yield call([obj, obj.method], arg1, arg2, ...)
+yield apply(obj, obj.method, [arg1, arg2, ...])
