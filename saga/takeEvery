@@ -1,0 +1,32 @@
+// ### 并发
+/**
+ * takeEvery
+ * params: pattern; saga是saga类型的函数
+ * takeEvery 可以让多个saga任务并行被 fork 执行
+ */
+import { fork, take, cancel } from 'redux-saga/effects'
+
+const takeEvery = (pattern, saga, ...args) => fork(function*() {
+  while(true) {
+    const action = yield take(pattern)
+    yield fork(saga, ...args.concat(action))
+  }
+})
+
+
+/**
+ * takeLatest
+ * 不允许多个saga任务并行执行一旦收到新的发起的action，就会取消前面fork过的任务。
+ * 如 处理 AJAX 请求
+ */
+const takeLatest = (pattern, saga, ...args) => fork(function*() {
+  let lastTask
+  while (true) {
+    const action = yield take(pattern)
+    if (lastTask) {
+      yield cancel(lastTask)
+    }
+    lastTask = yield fork(saga, ...args.concat(action))
+  }
+})
+
